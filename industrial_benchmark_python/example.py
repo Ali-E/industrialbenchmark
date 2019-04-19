@@ -1,7 +1,9 @@
 # coding=utf-8
 from IDS import IDS
 import numpy as np
-import pylab as plt
+import matplotlib.pyplot as plt
+plt.ion()
+
 '''
 The MIT License (MIT)
 
@@ -28,23 +30,30 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 '''
 
-n_trajectories = 10
+n_trajectories = 2
 T = 1000
 
-data = np.zeros((n_trajectories,T))
-data_cost = np.zeros((n_trajectories,T))
+env = IDS(p=100)
+obs_names = ['a1', 'a2', 'a3'] + env.observable_keys
+data = np.zeros((n_trajectories, T, len(obs_names)))
 
+action = np.array([0., 0., 0.])
 for k in range(n_trajectories):
     env = IDS(p=100)
     for t in range(T):
-        at = 2 * np.random.rand(3) -1
-        markovStates = env.step(at)
-        data[k,t] = env.visibleState()[-1]
+        action +=  (2 * np.random.rand(3) - 1)
+        action = np.clip(action, -1, 1)
+        markovStates = env.step(action)
+        data[k, t, 3:] = env.visibleState()
+        data[k, t, 0:3] = action
 
-        all_States = env.allStates()
 
-
-plt.plot(data.T)
+plt.figure(1)
+plt.clf()
+for i, v in enumerate(obs_names):
+    plt.subplot(len(obs_names), 1, i+1)
+    plt.plot(data[:, :, i].T)
+    plt.ylabel(v)
 plt.xlabel('T')
-plt.ylabel('Reward')
-plt.show()
+# plt.show()
+plt.savefig('plot')
